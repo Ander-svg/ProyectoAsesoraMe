@@ -1,10 +1,13 @@
 <?php
-// Definir los valores de la sección "Connections" en tu panel de Render
-$host = "dpg-d1mper7fte5s739j38dg-a"; // El hostname de Render
-$port = "5432";  // El puerto por defecto para PostgreSQL en Render
-$dbname = "asesoramedb_jimb"; // El nombre de tu base de datos en Render
-$user = "guevara"; // El nombre de usuario que te da Render
-$password = "N9C7MTdwtDEmlrSm6ayeFyGd16jIl1Rd"; // La contraseña que te da Render
+// Estos valores son los que obtendrá tu aplicación de las variables de entorno de Render.
+// Si por alguna razón la variable de entorno no está configurada, usará el valor de fallback.
+// Asegúrate de que las variables de entorno en Render estén configuradas con estos mismos valores.
+
+$host = getenv('DB_HOST') ?: 'dpg-d1mper7fte5s739j38dg-a';
+$port = getenv('DB_PORT') ?: '5432';
+$dbname = getenv('DB_NAME') ?: 'asesoramedb_jimb';
+$user = getenv('DB_USER') ?: 'guevara';
+$password = getenv('DB_PASSWORD') ?: 'N9C7MTdwtDEmlrSm6ayeFyGd16jIl1Rd';
 
 // Cadena de conexión para PostgreSQL
 $conn_string = "host=$host port=$port dbname=$dbname user=$user password=$password";

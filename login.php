@@ -1,184 +1,252 @@
 <?php
-// Incluir el archivo de conexión
-include('conexion.php');  // Asegúrate de que la ruta sea correcta
-
-// Iniciar sesión
+include('conexion.php');
 session_start();
 
-// Comprobar si se envió el formulario
+$error_message = '';
+$success_message = '';
+$show_loading = false;
+$max_attempts = 3;
+$lock_time = 60; // segundos
+
+// Variables de control de intentos por sesión
+if (!isset($_SESSION['login_attempts'])) {
+    $_SESSION['login_attempts'] = 0;
+}
+if (!isset($_SESSION['lock_expires'])) {
+    $_SESSION['lock_expires'] = 0;
+}
+
+// Si está bloqueado, mostrar pantalla de espera
+if ($_SESSION['login_attempts'] > $max_attempts - 1) {
+    $now = time();
+    if ($_SESSION['lock_expires'] == 0) {
+        $_SESSION['lock_expires'] = $now + $lock_time;
+    }
+    $remaining = $_SESSION['lock_expires'] - $now;
+    if ($remaining > 0) {
+        // Pantalla de espera
+        ?>
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Demasiados intentos - AsesoraMe</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            <script src="https://unpkg.com/@phosphor-icons/web"></script>
+            <style>
+                body { font-family: 'Inter', sans-serif; background-color: #111827; color: #d1d5db; }
+            </style>
+        </head>
+        <body class="flex flex-col min-h-screen items-center justify-center bg-gray-900">
+            <div class="bg-gray-800/90 p-10 rounded-xl shadow-lg flex flex-col items-center">
+                <i class="ph ph-clock-countdown text-5xl text-yellow-400 mb-4 animate-pulse"></i>
+                <h2 class="text-2xl font-bold text-white mb-2">Demasiados intentos fallidos</h2>
+                <p class="mb-2 text-gray-300">Por motivos de seguridad, debes esperar <span id="timer"><?= $remaining ?></span> segundos antes de volver a intentarlo.</p>
+                <p class="text-gray-400 text-sm">No cierres ni recargues esta página.</p>
+            </div>
+            <script>
+                let tiempo = <?= $remaining ?>;
+                let timer = document.getElementById('timer');
+                let interval = setInterval(function() {
+                    tiempo--;
+                    timer.textContent = tiempo;
+                    if (tiempo <= 0) {
+                        clearInterval(interval);
+                        window.location.href = "login.php?reset=1";
+                    }
+                }, 1000);
+            </script>
+        </body>
+        </html>
+        <?php
+        exit();
+    } else {
+        // Reiniciar intentos después del tiempo de bloqueo
+        $_SESSION['login_attempts'] = 0;
+        $_SESSION['lock_expires'] = 0;
+        if (isset($_GET['reset'])) {
+            $success_message = "Ya puedes volver a intentar iniciar sesión.";
+        }
+    }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Recoger los datos del formulario
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    // Consulta SQL para obtener el usuario y su rol desde la tabla usuarioRol
-    $query = "SELECT u.*, r.role_name 
+    $query = "SELECT u.*, r.nombre AS role_name 
               FROM usuario u
-              LEFT JOIN usuarioRol ur ON u.id = ur.usuario_id
-              LEFT JOIN roles r ON ur.rol_id = r.id
+              LEFT JOIN roles r ON u.rol_id = r.id
               WHERE u.correo = '$username' LIMIT 1";
     $result = mysqli_query($conn, $query);
     $user = mysqli_fetch_assoc($result);
 
-    // Verificar si el usuario existe
     if ($user) {
-        // Verificar si la cuenta está bloqueada
         if ($user['bloqueado'] == 1) {
             $error_message = "Tu cuenta está bloqueada. Por favor, contacta al administrador.";
         } else {
-            // Verificar si la contraseña es correcta
             if (password_verify($password, $user['contrasena_hash'])) {
-                // Iniciar sesión y guardar los datos del usuario
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['nombre'];
-                $_SESSION['role'] = $user['role_name']; // Guardamos el rol de la base de datos
+                $_SESSION['role'] = $user['role_name'];
+                $_SESSION['login_attempts'] = 0;
+                $_SESSION['lock_expires'] = 0;
 
-                // Resetear intentos fallidos a 0 cuando el login es correcto
-                $update_query = "UPDATE usuario SET intentos_fallidos = 0 WHERE correo = '$username'";
-                mysqli_query($conn, $update_query);
-
-                // Redirigir al usuario a la página de selección de rol
-                if (empty($_SESSION['role'])) {
-                    header("Location: seleccionar_rol.php"); // Redirige a la página de selección de rol
-                } else {
-                    header("Location: dashboard.php"); // Redirige al dashboard según el rol
-                }
-                exit();
+                $success_message = "Inicio de sesión exitoso. Redirigiendo...";
+                $show_loading = true;
+                echo "<script>
+                    setTimeout(function() {
+                        window.location.href = 'dashboard.php';
+                    }, 2000);
+                </script>";
             } else {
-                // Si la contraseña es incorrecta, aumentar el contador de intentos fallidos
-                $update_query = "UPDATE usuario SET intentos_fallidos = intentos_fallidos + 1 WHERE correo = '$username'";
-                mysqli_query($conn, $update_query);
-
-                // Comprobar si los intentos fallidos llegaron a 3
-                $user_check = mysqli_query($conn, "SELECT intentos_fallidos FROM usuario WHERE correo = '$username'");
-                $user_data = mysqli_fetch_assoc($user_check);
-                if ($user_data['intentos_fallidos'] >= 3) {
-                    // Bloquear la cuenta si tiene 3 intentos fallidos
-                    mysqli_query($conn, "UPDATE usuario SET bloqueado = 1 WHERE correo = '$username'");
-                    $error_message = "Has excedido el número de intentos. Tu cuenta ha sido bloqueada.";
+                $_SESSION['login_attempts']++;
+                if ($_SESSION['login_attempts'] > $max_attempts - 1) {
+                    header("Location: login.php"); // Redirige para mostrar pantalla de espera
+                    exit();
                 } else {
-                    $error_message = "Nombre de usuario o contraseña incorrectos.";
+                    $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
+                    $error_message = "Correo o contraseña incorrectos. Te quedan <b>$intentos_restantes</b> intento(s).";
                 }
             }
         }
     } else {
-        $error_message = "Nombre de usuario o contraseña incorrectos.";
+        $_SESSION['login_attempts']++;
+        if ($_SESSION['login_attempts'] > $max_attempts - 1) {
+            header("Location: login.php"); // Redirige para mostrar pantalla de espera
+            exit();
+        } else {
+            $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
+            $error_message = "Correo o contraseña incorrectos. Te quedan <b>$intentos_restantes</b> intento(s).";
+        }
     }
 }
 ?>
-
-
-
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Index - Mentor Bootstrap Template</title>
-  <meta name="description" content="">
-  <meta name="keywords" content="">
-
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-                                                                                                        
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
-
-  <!-- Main CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
-
-  <!-- =======================================================
-  * Template Name: Mentor
-  * Template URL: https://bootstrapmade.com/mentor-free-education-bootstrap-theme/
-  * Updated: Aug 07 2024 with Bootstrap v5.3.3
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - AsesoraMe</title>
+    <meta name="description" content="Inicia sesión en tu cuenta de AsesoraMe.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .form-container-bg {
+            background: linear-gradient(rgba(17, 24, 39, 0.8), rgba(17, 24, 39, 0.8)), url('https://placehold.co/1920x1080/4f46e5/111827?text=.') no-repeat center center;
+            background-size: cover;
+        }
+    </style>
 </head>
+<body class="form-container-bg min-h-screen flex flex-col">
+    <?php include 'header.php'; ?>
 
-<body class="index-page">
+    <main class="flex-1 flex items-center justify-center">
+        <div class="w-full max-w-md p-8 space-y-8 bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-indigo-900/20 mt-8 mb-8">
+            <div class="text-center">
+                <a href="index.php" class="text-3xl font-bold text-white">AsesoraMe</a>
+                <h2 class="mt-2 text-2xl font-bold tracking-tight text-white">Inicia sesión en tu cuenta</h2>
+                <p class="mt-2 text-sm text-gray-400">
+                    ¿Aún no tienes una?
+                    <a href="register.php" class="font-medium text-indigo-400 hover:text-indigo-300">
+                        Regístrate aquí
+                    </a>
+                </p>
+            </div>
 
-  <header id="header" class="header d-flex align-items-center sticky-top">
-    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+            <!-- Mostrar número de intentos restantes -->
+            <?php
+            if ($_SESSION['login_attempts'] > 0 && $_SESSION['login_attempts'] < $max_attempts) {
+                $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
+                echo '<div class="bg-yellow-900/40 border border-yellow-600/30 text-yellow-300 px-4 py-2 rounded-lg text-center mb-2">
+                        Te quedan <b>' . $intentos_restantes . '</b> intento(s) para iniciar sesión.
+                      </div>';
+            }
+            ?>
 
-      <a href="index.php" class="logo d-flex align-items-center me-auto">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.png" alt=""> -->
-        <h1 class="sitename">AsesoraMe</h1>
-      </a>
+            <?php if ($error_message): ?>
+                <div class="bg-red-900/50 border border-red-400/30 text-red-300 px-4 py-3 rounded-lg relative text-center" role="alert">
+                    <span class="block sm:inline"><?= $error_message ?></span>
+                </div>
+            <?php endif; ?>
 
-      <nav id="navmenu" class="navmenu">
-        <ul>
-          <li><a href="index.php" class="active">Inicio<br></a></li> <!-- End of dropdown menu -->
-          <li><a href="about.html">¿Quiénes somos?</a></li> <!-- End of dropdown menu -->
-          <li><a href="courses.html">Cursos</a></li> <!-- End of dropdown menu -->
-          <li><a href="contact.html">Soporte</a></li> <!-- End of dropdown menu -->
-        </ul> <!-- End of dropdown menu items -->
-        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-      </nav>
+            <?php if ($success_message): ?>
+                <div class="bg-green-900/50 border border-green-400/30 text-green-300 px-4 py-3 rounded-lg relative text-center flex items-center justify-center gap-2" role="alert">
+                    <i class="ph ph-check-circle text-green-400 text-2xl"></i>
+                    <span><?= $success_message ?></span>
+                    <?php if ($show_loading): ?>
+                        <span class="ml-2 animate-spin inline-block">
+                            <i class="ph ph-spinner text-green-300 text-2xl"></i>
+                        </span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
 
-      <a class="btn-getstarted" href="login.php">Iniciar Sesion</a>
+            <form class="mt-8 space-y-6" action="" method="POST" id="loginForm" autocomplete="off">
+                <input type="hidden" name="remember" value="true">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="username" class="sr-only">Correo electrónico</label>
+                        <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="ph ph-envelope text-gray-400"></i>
+                            </div>
+                            <input id="username" name="username" type="email" autocomplete="email" required 
+                                   class="relative block w-full appearance-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-3 pl-10 text-white placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" 
+                                   placeholder="Correo electrónico">
+                        </div>
+                    </div>
+                    <div class="pt-4">
+                        <label for="password" class="sr-only">Contraseña</label>
+                        <div class="relative">
+                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="ph ph-lock text-gray-400"></i>
+                            </div>
+                            <input id="password" name="password" type="password" autocomplete="current-password" required 
+                                   class="relative block w-full appearance-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-3 pl-10 text-white placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" 
+                                   placeholder="Contraseña">
+                        </div>
+                    </div>
+                </div>
 
-     <!-- Eliminar el enlace de "Iniciar sesión" en el header -->
-    </div>
-  </header>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-500 bg-gray-700 text-indigo-600 focus:ring-indigo-500">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-300">Recuérdame</label>
+                    </div>
 
-  <!-- Formulario de Login -->
-<div class="container py-5">
-    <h2 class="text-center">Iniciar sesión</h2>
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-indigo-400 hover:text-indigo-300">¿Olvidaste tu contraseña?</a>
+                    </div>
+                </div>
 
-    <?php if (isset($error_message)): ?>
-        <div class="alert alert-danger text-center">
-            <?= $error_message ?>
+                <div>
+                    <button type="submit" id="loginBtn"
+                            class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                        Iniciar Sesión
+                    </button>
+                </div>
+            </form>
         </div>
-    <?php endif; ?>
+    </main>
 
-    <form method="POST" class="mx-auto" style="max-width: 400px;">
-        <div class="mb-3">
-            <label for="username" class="form-label">Nombre de usuario</label>
-            <input type="text" class="form-control" id="username" name="username" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Contraseña</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
-    </form>
-
-    <p class="text-center mt-3">
-        ¿No tienes cuenta? <a href="register.php">Regístrate aquí</a>
-    </p>
-
-    <!-- Mostrar nombre de usuario y rol después de iniciar sesión -->
-    <?php if (isset($_SESSION['username'])): ?>
-        <div class="alert alert-success mt-4">
-            <p>Bienvenido, <?= $_SESSION['username']; ?> (<?= $_SESSION['role']; ?>)</p>
-        </div>
-    <?php endif; ?>
-
-    <!-- Mostrar nombre de usuario y rol después de iniciar sesión -->
-    <?php if (isset($_SESSION['username'])): ?>
-        <div class="alert alert-success mt-4">
-            <p>Bienvenido, <?= $_SESSION['username']; ?> (<?= $_SESSION['role']; ?>)</p>
-        </div>
-    <?php endif; ?>
-</div>
-
-
-  <!-- Scripts de Bootstrap -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Mostrar loading en el botón al enviar el formulario (solo frontend)
+    document.getElementById('loginForm').addEventListener('submit', function() {
+        var btn = document.getElementById('loginBtn');
+        btn.innerHTML = '<span class="animate-spin inline-block mr-2"><i class="ph ph-spinner text-white text-xl"></i></span> Iniciando...';
+        btn.disabled = true;
+    });
+    </script>
 </body>
-
 </html>

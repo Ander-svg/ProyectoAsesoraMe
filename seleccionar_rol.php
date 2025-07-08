@@ -3,17 +3,21 @@ session_start();
 include('conexion.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $role = $_POST['role']; // Capturamos el rol seleccionado
-    $user_id = $_SESSION['user_id']; // Usamos el ID del usuario que está en la sesión
+    $role = $_POST['role']; // 'Asesor' o 'Aprendiz'
+    $user_id = $_SESSION['user_id'];
 
-    // Actualizamos el rol en la base de datos
-    $query = "UPDATE usuario SET role = '$role' WHERE id = $user_id";
-    mysqli_query($conn, $query); // Ejecuatamos la consulta
+    // Busca el id del rol seleccionado
+    $result = mysqli_query($conn, "SELECT id FROM roles WHERE nombre = '$role' LIMIT 1");
+    $row = mysqli_fetch_assoc($result);
+    $rol_id = $row['id'];
 
-    // Guardamos el rol en la sesión
+    // Actualiza el rol_id
+    $query = "UPDATE usuario SET rol_id = $rol_id WHERE id = $user_id";
+    mysqli_query($conn, $query);
+
     $_SESSION['role'] = $role;
 
-    // Redirigimos al dashboard correspondiente
+    // Redirige al dashboard correspondiente
     if ($role == 'Asesor') {
         header("Location: asesor_dashboard.php");
     } else {

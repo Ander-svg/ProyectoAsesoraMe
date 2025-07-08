@@ -1,549 +1,265 @@
 <?php
-// Iniciar sesión
 session_start();
-
-// Verificar si el usuario está logueado
-if (isset($_SESSION['user_id'])) {
-    $username = $_SESSION['username']; // Nombre de usuario del usuario logueado
-    $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'Usuario'; // Verificar si existe el rol en la sesión
-} else {
-    $username = null; // Si no está logueado, no hay nombre de usuario
-    $role = null; // Si no está logueado, no hay rol
-}
+$is_logged_in = isset($_SESSION['user_id']);
+$username = $is_logged_in ? $_SESSION['username'] : null;
+$role = $is_logged_in ? $_SESSION['role'] : null;
 ?>
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>AsesoraMe</title>
-  <meta name="description" content="">
-  <meta name="keywords" content="">
-
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-                                                                                                        
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
-
-  <!-- Main CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
-
-  <!-- =======================================================
-  * Template Name: Mentor
-  * Template URL: https://bootstrapmade.com/mentor-free-education-bootstrap-theme/
-  * Updated: Aug 07 2024 with Bootstrap v5.3.3
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AsesoraMe - Aprende y Crece</title>
+    <meta name="description" content="Plataforma de asesorías y cursos en línea para potenciar tu desarrollo profesional y personal.">
+    <meta name="keywords" content="cursos, asesoría, online, aprendizaje, desarrollo profesional">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #4f46e5 50%, #7c3aed 100%);
+        }
+    </style>
 </head>
-
-<body class="index-page">
-
-  <header id="header" class="header d-flex align-items-center sticky-top">
-    <div class="container-fluid container-xl position-relative d-flex align-items-center">
-
-      <a href="index.php" class="logo d-flex align-items-center me-auto">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.png" alt=""> -->
-        <h1 class="sitename">AsesoraMe</h1>
-      </a>
-
-      <nav id="navmenu" class="navmenu">
-        <ul>
-          <li><a href="index.php" class="active">Inicio<br></a></li> <!-- End of dropdown menu -->
-          <li><a href="about.html">¿Quiénes somos?</a></li> <!-- End of dropdown menu -->
-          <li><a href="courses.html">Cursos</a></li> <!-- End of dropdown menu -->
-          <li><a href="contact.html">Soporte</a></li> <!-- End of dropdown menu -->
-        </ul> <!-- End of dropdown menu items -->
-        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-      </nav>
-
-        <!-- Mostrar el ícono de usuario y el botón de cerrar sesión -->
-<div class="user-info">
-    <?php if (isset($_SESSION['username'])): ?>
-        <!-- Menú desplegable -->
-        <div class="dropdown">
-            <a href="#" class="user-name dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-circle"></i> <strong><?= $_SESSION['username'] ?></strong> (<?= $_SESSION['role'] ?>)
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Perfil</a></li>
-                <li><a class="dropdown-item" href="#">Cambiar rol</a></li>
-                <li><a class="dropdown-item" href="logout.php">Cerrar sesión</a></li>
-            </ul>
-        </div>
-    <?php else: ?>
-        <a href="login.php" class="btn-getstarted">Iniciar sesión</a>
-    <?php endif; ?>
-</div>
-</div>
-    </header>
-
-  <main class="main">
-
-    <!-- Hero Section -->
-    <section id="hero" class="hero section dark-background">
-
-      <img src="assets/img/hero-bg.jpg" alt="" data-aos="fade-in">
-
-      <div class="container">
-        <h2 data-aos="fade-up" data-aos-delay="100">Aprende Hoy,<br>Lidera Mañana</h2>
-        <p data-aos="fade-up" data-aos-delay="200">Somos un equipo de diseñadores talentosos creando sitios que ofrecen oportunidades</p>
-        <div class="d-flex mt-4" data-aos="fade-up" data-aos-delay="300">
-          <a href="login.php" class="btn-get-started">Inscribirme</a>
-        </div>
-      </div>
-
-    </section> <!-- End of pricing section --> <!-- End of trainers section --><!-- /Hero Section -->
-
-    <!-- Acerca de Section -->
-    <section id="about" class="about section">
-
-      <div class="container">
-
-        <div class="row gy-4">
-
-          <div class="col-lg-6 order-1 order-lg-2" data-aos="fade-up" data-aos-delay="100">
-            <img src="assets/img/about.jpg" class="img-fluid" alt="">
-          </div>
-
-          <div class="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
-    <h3>Asesoramiento profesional para tu crecimiento</h3>
-    <p class="fst-italic">
-        Ofrecemos servicios de asesoría personalizada en áreas clave para tu desarrollo profesional y personal, con expertos que te guiarán en cada paso.
-    </p>
-    <ul>
-        <li><i class="bi bi-check-circle"></i> <span>Asesoría en marketing digital para potenciar tu presencia online.</span></li>
-        <li><i class="bi bi-check-circle"></i> <span>Orientación en desarrollo web, desde el diseño hasta la implementación.</span></li>
-        <li><i class="bi bi-check-circle"></i> <span>Consultoría en fotografía profesional, para mejorar tus habilidades y proyectos visuales.</span></li>
-    </ul>
-    <a href="#" class="read-more"><span>Ver más</span><i class="bi bi-arrow-right"></i></a>
-</div>
-
-
-        </div>
-
-      </div>
-
-    </section> <!-- End of pricing section --> <!-- End of trainers section --><!-- /Acerca de Section -->
-
-    <!-- Counts Section -->
-<section id="counts" class="section counts light-background">
-
-  <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-    <div class="row gy-4">
-
-      <!-- Estudiantes -->
-      <div class="col-lg-3 col-md-6">
-        <div class="stats-item text-center w-100 h-100">
-          <span data-purecounter-start="0" data-purecounter-end="1232" data-purecounter-duration="1" class="purecounter"></span>
-          <p>Estudiantes Registrados</p>
-        </div>
-      </div><!-- End Stats Item -->
-
-      <!-- Cursos -->
-      <div class="col-lg-3 col-md-6">
-        <div class="stats-item text-center w-100 h-100">
-          <span data-purecounter-start="0" data-purecounter-end="64" data-purecounter-duration="1" class="purecounter"></span>
-          <p>Cursos Disponibles</p>
-        </div>
-      </div><!-- End Stats Item -->
-
-      <!-- Asesores -->
-      <div class="col-lg-3 col-md-6">
-        <div class="stats-item text-center w-100 h-100">
-          <span data-purecounter-start="0" data-purecounter-end="42" data-purecounter-duration="1" class="purecounter"></span>
-          <p>Asesores Expertos</p>
-        </div>
-      </div><!-- End Stats Item -->
-
-      <!-- Consultas realizadas (por ejemplo) -->
-      <div class="col-lg-3 col-md-6">
-        <div class="stats-item text-center w-100 h-100">
-          <span data-purecounter-start="0" data-purecounter-end="1200" data-purecounter-duration="1" class="purecounter"></span>
-          <p>Consultas Realizadas</p>
-        </div>
-      </div><!-- End Stats Item -->
-
-    </div>
-
-  </div>
-
-    </section> <!-- End of pricing section --> <!-- End of trainers section --><!-- /Counts Section -->
-
-    <!-- Why Us Section -->
-<section id="why-us" class="section why-us">
-
-  <div class="container">
-
-    <div class="row gy-4">
-
-      <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="why-box">
-          <h3>¿Por qué elegir AsesoraMe?</h3>
-          <p>
-            En AsesoraMe, proporcionamos asesorías personalizadas con expertos en diversas áreas. Nos enfocamos en brindarte un servicio de calidad que se ajuste a tus necesidades y objetivos, asegurando resultados prácticos y efectivos para tu crecimiento.
-          </p>
-          <div class="text-center">
-            <a href="#cursos" class="more-btn"><span>Ver más</span> <i class="bi bi-chevron-right"></i></a>
-          </div>
-        </div>
-      </div><!-- End Why Box -->
-
-      <div class="col-lg-8 d-flex align-items-stretch">
-        <div class="row gy-4" data-aos="fade-up" data-aos-delay="200">
-
-          <div class="col-xl-4">
-            <div class="icon-box d-flex flex-column justify-content-center align-items-center">
-              <i class="bi bi-clipboard-data"></i>
-              <h4>Asesoría Personalizada</h4>
-              <p>Ofrecemos asesorías adaptadas a tus necesidades específicas, con atención 100% personalizada por expertos en cada área.</p>
+<body class="text-gray-300">
+    <?php include 'header.php'; ?>
+    <!-- ========== MAIN CONTENT ========== -->
+    <main>
+        <!-- ========== Hero Section ========== -->
+        <section id="hero" class="hero-gradient text-white">
+            <div class="container mx-auto px-4 h-[85vh] flex flex-col justify-center items-center text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">Alcanza tu Máximo Potencial</h1>
+                <p class="text-lg md:text-xl max-w-3xl mb-8 text-indigo-200">Conecta con asesores expertos en cientos de materias. Aprende a tu ritmo, de forma virtual o presencial.</p>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="#courses" class="bg-white text-indigo-700 hover:bg-indigo-100 font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105 duration-300">Buscar un Asesor</a>
+                    <a href="register.php" class="bg-transparent border-2 border-white hover:bg-white/20 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 duration-300">Conviértete en Asesor</a>
+                </div>
             </div>
-          </div><!-- End Icon Box -->
+        </section>
 
-          <div class="col-xl-4" data-aos="fade-up" data-aos-delay="300">
-            <div class="icon-box d-flex flex-column justify-content-center align-items-center">
-              <i class="bi bi-gem"></i>
-              <h4>Asesores Expertos</h4>
-              <p>Contamos con un equipo de asesores con experiencia en marketing, desarrollo web, fotografía y más, listos para ayudarte.</p>
+        <!-- ========== About Section ========== -->
+        <section id="about" class="py-20 bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="order-2 md:order-1">
+                        <h2 class="text-3xl font-bold text-white mb-4">Encuentra tu Curso Ideal con Asesores Expertos</h2>
+                        <p class="text-gray-300 mb-6">En AsesoraMe, el conocimiento se potencia con la experiencia. Te conectamos con asesores expertos que imparten cursos prácticos en una amplia variedad de materias para que adquieras habilidades reales.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="ph-fill ph-check-circle text-purple-400 text-2xl mr-3 mt-1"></i>
+                                <span><strong class="text-white">Variedad de Cursos:</strong> Explora un catálogo diverso en tecnología, artes, ciencias, negocios y más.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="ph-fill ph-check-circle text-purple-400 text-2xl mr-3 mt-1"></i>
+                                <span><strong class="text-white">Aprendizaje Flexible:</strong> Elige el formato que más te convenga, con horarios flexibles y sesiones personalizadas.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="ph-fill ph-check-circle text-purple-400 text-2xl mr-3 mt-1"></i>
+                                <span><strong class="text-white">Calidad Garantizada:</strong> Todos nuestros asesores son profesionales verificados con experiencia probada en su campo.</span>
+                            </li>
+                        </ul>
+                        <a href="#courses" class="mt-8 inline-block bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-300">
+                            Ver todos los cursos <i class="ph ph-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    <div class="order-1 md:order-2">
+                        <img src="https://placehold.co/600x400/111827/7c3aed?text=Aprende+con+Expertos" alt="Persona aprendiendo en línea" class="rounded-2xl shadow-2xl shadow-purple-900/30 w-full h-auto">
+                    </div>
+                </div>
             </div>
-          </div><!-- End Icon Box -->
-
-          <div class="col-xl-4" data-aos="fade-up" data-aos-delay="400">
-            <div class="icon-box d-flex flex-column justify-content-center align-items-center">
-              <i class="bi bi-inboxes"></i>
-              <h4>Accesibilidad y Flexibilidad</h4>
-              <p>Accede a nuestros servicios desde cualquier lugar, con opciones flexibles que se ajustan a tu tiempo y ritmo.</p>
+        </section>
+        
+        <!-- ========== Stats Section ========== -->
+        <section id="stats" class="py-20 bg-gray-800">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div class="p-4">
+                        <h3 class="text-4xl font-extrabold text-white">1,200+</h3>
+                        <p class="text-gray-400 font-medium mt-2">Estudiantes Felices</p>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-4xl font-extrabold text-white">60+</h3>
+                        <p class="text-gray-400 font-medium mt-2">Cursos de Calidad</p>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-4xl font-extrabold text-white">40+</h3>
+                        <p class="text-gray-400 font-medium mt-2">Asesores Expertos</p>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-4xl font-extrabold text-white">98%</h3>
+                        <p class="text-gray-400 font-medium mt-2">Tasa de Satisfacción</p>
+                    </div>
+                </div>
             </div>
-          </div><!-- End Icon Box -->
+        </section>
 
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-</section> <!-- End of Why Us Section -->
-
-
-   <!-- Features Section -->
-<section id="features" class="features section">
-
-  <div class="container">
-
-    <div class="row gy-4">
-
-      <!-- Característica 1 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="features-item">
-          <i class="bi bi-eye" style="color: #ffbb2c;"></i>
-          <h3><a href="#cursos" class="stretched-link">Visibilidad Total</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 2 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="200">
-        <div class="features-item">
-          <i class="bi bi-infinity" style="color: #5578ff;"></i>
-          <h3><a href="#soporte-tecnico" class="stretched-link">Soporte Técnico 24/7</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 3 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="300">
-        <div class="features-item">
-          <i class="bi bi-mortarboard" style="color: #e80368;"></i>
-          <h3><a href="#asesores" class="stretched-link">Asesores Expertos</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 4 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="400">
-        <div class="features-item">
-          <i class="bi bi-nut" style="color: #e361ff;"></i>
-          <h3><a href="#cursos" class="stretched-link">Cursos Flexibles</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 5 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="500">
-        <div class="features-item">
-          <i class="bi bi-shuffle" style="color: #47aeff;"></i>
-          <h3><a href="#testimonios" class="stretched-link">Testimonios Reales</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 6 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="600">
-        <div class="features-item">
-          <i class="bi bi-star" style="color: #ffa76e;"></i>
-          <h3><a href="#asesores" class="stretched-link">Calificación de Asesores</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 7 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="700">
-        <div class="features-item">
-          <i class="bi bi-x-diamond" style="color: #11dbcf;"></i>
-          <h3><a href="#contacto" class="stretched-link">Atención Personalizada</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 8 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="800">
-        <div class="features-item">
-          <i class="bi bi-camera-video" style="color: #4233ff;"></i>
-          <h3><a href="#cursos" class="stretched-link">Contenido Visual</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 9 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="900">
-        <div class="features-item">
-          <i class="bi bi-command" style="color: #b2904f;"></i>
-          <h3><a href="#soporte-tecnico" class="stretched-link">Soporte in Tiempo Real</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 10 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="1000">
-        <div class="features-item">
-          <i class="bi bi-dribbble" style="color: #b20969;"></i>
-          <h3><a href="#contacto" class="stretched-link">Consultas Directas</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 11 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="1100">
-        <div class="features-item">
-          <i class="bi bi-activity" style="color: #ff5828;"></i>
-          <h3><a href="#cursos" class="stretched-link">Cursos Interactivos</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-      <!-- Característica 12 -->
-      <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="1200">
-        <div class="features-item">
-          <i class="bi bi-brightness-high" style="color: #29cc61;"></i>
-          <h3><a href="#testimonios" class="stretched-link">Mejora Continua</a></h3>
-        </div>
-      </div><!-- End Feature Item -->
-
-    </div>
-
-  </div>
-
-</section> <!-- End of Features Section -->
-
-
-    <!-- Cursos Section -->
-<section id="Cursos" class="courses section">
-
-  <!-- Título de la Sección -->
-  <div class="container section-title" data-aos="fade-up">
-    <h2>Cursos Disponibles</h2>
-    <p>Cursos Populares</p>
-  </div><!-- End Section Title -->
-
-  <div class="container">
-
-    <div class="row">
-
-      <!-- Curso de Autocad -->
-      <div class="col-lg-4 col-md-6 d-flex align-items-stretch" data-aos="zoom-in" data-aos-delay="100">
-        <div class="course-item">
-          <img src="assets/img/course-1.jpg" class="img-fluid" alt="Curso de Autocad">
-          <div class="course-content">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <p class="category">Diseño 2D y 3D</p>
-              <p class="price">S/ 30 por hora</p>
+        <!-- ========== Courses Section ========== -->
+        <section id="courses" class="py-20 bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-white">Nuestros Cursos Populares</h2>
+                    <p class="text-gray-400 mt-2 max-w-2xl mx-auto">Explora una selección de nuestros cursos mejor valorados y comienza a aprender una nueva habilidad hoy mismo.</p>
+                </div>
+                <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Course Card 1 -->
+                    <div class="bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
+                        <img src="https://placehold.co/400x250/a5b4fc/1e1b4b?text=Autocad" alt="Curso de Autocad" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-indigo-900/50 text-indigo-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">Diseño 2D y 3D</span>
+                                <span class="text-lg font-bold text-white">S/ 30 /h</span>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Curso de Autocad</h3>
+                            <p class="text-gray-400 text-sm mb-4">Aprende a crear planos y modelos 3D con la herramienta líder en la industria del diseño técnico.</p>
+                            <div class="border-t border-gray-700 pt-4 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <img src="https://i.pravatar.cc/40?u=antonio" alt="Antonio" class="w-8 h-8 rounded-full mr-2 border-2 border-gray-600">
+                                    <span class="text-sm font-medium text-gray-300">Antonio</span>
+                                </div>
+                                <div class="flex items-center space-x-4 text-sm text-gray-400">
+                                    <span class="flex items-center"><i class="ph ph-users mr-1"></i> 50</span>
+                                    <span class="flex items-center"><i class="ph ph-heart mr-1"></i> 65</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Course Card 2 -->
+                    <div class="bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
+                        <img src="https://placehold.co/400x250/fca5a5/450a0a?text=Aritmética" alt="Curso de Aritmética" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-red-900/50 text-red-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">Matemáticas</span>
+                                <span class="text-lg font-bold text-white">S/ 20 /h</span>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2 text-white group-hover:text-red-400 transition-colors">Curso de Aritmética</h3>
+                            <p class="text-gray-400 text-sm mb-4">Domina los conceptos fundamentales de la aritmética para resolver problemas complejos.</p>
+                            <div class="border-t border-gray-700 pt-4 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <img src="https://i.pravatar.cc/40?u=lana" alt="Lana" class="w-8 h-8 rounded-full mr-2 border-2 border-gray-600">
+                                    <span class="text-sm font-medium text-gray-300">Lana</span>
+                                </div>
+                                <div class="flex items-center space-x-4 text-sm text-gray-400">
+                                    <span class="flex items-center"><i class="ph ph-users mr-1"></i> 35</span>
+                                    <span class="flex items-center"><i class="ph ph-heart mr-1"></i> 42</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Course Card 3 -->
+                    <div class="bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
+                        <img src="https://placehold.co/400x250/86efac/14532d?text=POO" alt="Curso de Programación Orientada a Objetos" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-green-900/50 text-green-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">Programación</span>
+                                <span class="text-lg font-bold text-white">S/ 25 /h</span>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2 text-white group-hover:text-green-400 transition-colors">Programación Orientada a Objetos</h3>
+                            <p class="text-gray-400 text-sm mb-4">Construye software robusto y escalable aprendiendo los pilares de la POO.</p>
+                            <div class="border-t border-gray-700 pt-4 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <img src="https://i.pravatar.cc/40?u=brandon" alt="Brandon" class="w-8 h-8 rounded-full mr-2 border-2 border-gray-600">
+                                    <span class="text-sm font-medium text-gray-300">Brandon</span>
+                                </div>
+                                <div class="flex items-center space-x-4 text-sm text-gray-400">
+                                    <span class="flex items-center"><i class="ph ph-users mr-1"></i> 20</span>
+                                    <span class="flex items-center"><i class="ph ph-heart mr-1"></i> 85</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </section>
+    </main>
 
-            <h3><a href="course-details.html">Curso de Autocad</a></h3>
-            <p class="description">Aprende a crear planos arquitectónicos, diseño en 2D y 3D utilizando Autocad, una de las herramientas más importantes en diseño técnico.</p>
-            <div class="trainer d-flex justify-content-between align-items-center">
-              <div class="trainer-profile d-flex align-items-center">
-                <img src="assets/img/trainers/trainer-1-2.jpg" class="img-fluid" alt="">
-                <a href="" class="trainer-link">Antonio</a>
-              </div>
-              <div class="trainer-rank d-flex align-items-center">
-                <i class="bi bi-person user-icon"></i>&nbsp;50
-                &nbsp;&nbsp;
-                <i class="bi bi-heart heart-icon"></i>&nbsp;65
-              </div>
+    <!-- ========== FOOTER ========== -->
+    <footer id="contact" class="bg-black text-white">
+        <div class="container mx-auto px-4 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <!-- About -->
+                <div class="col-span-1 md:col-span-2 lg:col-span-1">
+                    <h4 class="text-2xl font-bold mb-4">AsesoraMe</h4>
+                    <p class="text-gray-400 mb-4">Tu plataforma de confianza para el aprendizaje y desarrollo continuo. Conectamos talento con conocimiento.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="ph ph-twitter-logo text-2xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="ph ph-facebook-logo text-2xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="ph ph-instagram-logo text-2xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="ph ph-linkedin-logo text-2xl"></i></a>
+                    </div>
+                </div>
+                <!-- Links -->
+                <div>
+                    <h5 class="font-bold text-lg mb-4">Enlaces</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#hero" class="text-gray-400 hover:text-white transition-colors">Inicio</a></li>
+                        <li><a href="#courses" class="text-gray-400 hover:text-white transition-colors">Cursos</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors">Asesores</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+                <!-- Servicios -->
+                <div>
+                    <h5 class="font-bold text-lg mb-4">Servicios</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Marketing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Desarrollo Web</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Diseño Gráfico</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Fotografía</a></li>
+                    </ul>
+                </div>
+                <!-- Newsletter -->
+                <div>
+                    <h5 class="font-bold text-lg mb-4">Suscríbete</h5>
+                    <p class="text-gray-400 mb-4">Recibe las últimas noticias y ofertas especiales.</p>
+                    <form>
+                        <div class="flex">
+                            <input type="email" placeholder="Tu email" class="w-full px-4 py-2 rounded-l-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-r-lg transition-colors">
+                                <i class="ph ph-paper-plane-tilt"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-          </div>
-        </div>
-      </div> <!-- End Course Item-->
-
-      <!-- Curso de Aritmética -->
-      <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-md-0" data-aos="zoom-in" data-aos-delay="200">
-        <div class="course-item">
-          <img src="assets/img/course-2.jpg" class="img-fluid" alt="Curso de Aritmética">
-          <div class="course-content">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <p class="category">Matemáticas</p>
-              <p class="price">S/ 20 por hora</p>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm">
+                <p>&copy; <span id="year"></span> AsesoraMe. Todos los derechos reservados.</p>
             </div>
-
-            <h3><a href="course-details.html">Curso de Aritmética</a></h3>
-            <p class="description">Domina los conceptos fundamentales de la aritmética, ideales para mejorar tus habilidades en matemáticas básicas y avanzadas.</p>
-            <div class="trainer d-flex justify-content-between align-items-center">
-              <div class="trainer-profile d-flex align-items-center">
-                <img src="assets/img/trainers/trainer-2-2.jpg" class="img-fluid" alt="">
-                <a href="" class="trainer-link">Lana</a>
-              </div>
-              <div class="trainer-rank d-flex align-items-center">
-                <i class="bi bi-person user-icon"></i>&nbsp;35
-                &nbsp;&nbsp;
-                <i class="bi bi-heart heart-icon"></i>&nbsp;42
-              </div>
-            </div>
-          </div>
         </div>
-      </div> <!-- End Course Item-->
+    </footer>
 
-      <!-- Curso de Programación Orientada a Objetos -->
-      <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-lg-0" data-aos="zoom-in" data-aos-delay="300">
-        <div class="course-item">
-          <img src="assets/img/course-3.jpg" class="img-fluid" alt="Curso de Programación">
-          <div class="course-content">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <p class="category">Programación</p>
-              <p class="price">S/ 25 por hora</p>
-            </div>
+    <!-- ========== JavaScript ========== -->
+    <script>
+    (function () {
+        var mobileMenuButton = document.getElementById('mobile-menu-button');
+        var mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
 
-            <h3><a href="course-details.html">Programación Orientada a Objetos</a></h3>
-            <p class="description">Aprende los conceptos clave de la programación orientada a objetos, ideal para construir software modular y escalable.</p>
-            <div class="trainer d-flex justify-content-between align-items-center">
-              <div class="trainer-profile d-flex align-items-center">
-                <img src="assets/img/trainers/trainer-3-2.jpg" class="img-fluid" alt="">
-                <a href="" class="trainer-link">Brandon</a>
-              </div>
-              <div class="trainer-rank d-flex align-items-center">
-                <i class="bi bi-person user-icon"></i>&nbsp;20
-                &nbsp;&nbsp;
-                <i class="bi bi-heart heart-icon"></i>&nbsp;85
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> <!-- End Course Item-->
-
-    </div>
-
-  </div>
-
-</section> <!-- End of Cursos Section -->
-
-
-    
-  </main>
-
-  <!-- Footer -->
-<footer id="footer" class="footer position-relative light-background">
-
-  <div class="container footer-top">
-    <div class="row gy-4">
-    
-      <!-- Información de contacto -->
-      <div class="col-lg-4 col-md-6 footer-about">
-        <a href="index.php" class="logo d-flex align-items-center">
-          <span class="sitename">AsesoraMe</span>
-        </a>
-        <div class="footer-contact pt-3">
-          <p>Domus</p>
-          <p>Nuevo Chimbote, Perú</p>
-          <p class="mt-3"><strong>Teléfono:</strong> <span>+51 998 765 432</span></p>
-          <p><strong>Email:</strong> <span>info@asesorame.com</span></p>
-        </div>
-        <div class="social-links d-flex mt-4">
-          <a href="https://twitter.com/asesorame" target="_blank"><i class="bi bi-twitter"></i></a>
-          <a href="https://facebook.com/asesorame" target="_blank"><i class="bi bi-facebook"></i></a>
-          <a href="https://instagram.com/asesorame" target="_blank"><i class="bi bi-instagram"></i></a>
-          <a href="https://linkedin.com/company/asesorame" target="_blank"><i class="bi bi-linkedin"></i></a>
-        </div>
-      </div><!-- End Footer About -->
-
-      <!-- Enlaces útiles -->
-      <div class="col-lg-2 col-md-3 footer-links">
-        <h4>Enlaces Útiles</h4>
-        <ul>
-          <li><a href="#">Inicio</a></li>
-          <li><a href="#">¿Quiénes somos?</a></li>
-          <li><a href="#">Cursos</a></li>
-          <li><a href="#">Soporte Técnico</a></li>
-          <li><a href="#">Política de privacidad</a></li>
-        </ul>
-      </div><!-- End Footer Links -->
-
-      <!-- Servicios -->
-      <div class="col-lg-2 col-md-3 footer-links">
-        <h4>Servicios</h4>
-        <ul>
-          <li><a href="#">Asesoría en Marketing</a></li>
-          <li><a href="#">Desarrollo Web</a></li>
-          <li><a href="#">Diseño Gráfico</a></li>
-          <li><a href="#">Programación</a></li>
-          <li><a href="#">Fotografía</a></li>
-        </ul>
-      </div><!-- End Footer Links -->
-
-      <!-- Newsletter -->
-      <div class="col-lg-4 col-md-12 footer-newsletter">
-        <h4>Suscríbete a nuestro boletín</h4>
-        <p>Recibe las últimas noticias sobre nuestros cursos y servicios directamente en tu correo electrónico.</p>
-        <form action="forms/newsletter.php" method="post" class="php-email-form">
-          <div class="newsletter-form">
-            <input type="email" name="email" placeholder="Introduce tu correo">
-            <input type="submit" value="Suscribirse">
-          </div>
-          <div class="loading">Cargando...</div>
-          <div class="error-message"></div>
-          <div class="sent-message">¡Tu solicitud de suscripción ha sido enviada! Gracias.</div>
-        </form>
-      </div><!-- End Footer Newsletter -->
-
-    </div><!-- End Row -->
-  </div><!-- End Container -->
-
-  <!-- Copyright -->
-  <div class="container copyright text-center mt-4">
-    <p>© <span>Copyright</span> <strong class="px-1 sitename">AsesoraMe</strong> <span>Todos los derechos reservados</span></p>
-  </div><!-- End Copyright -->
-
-</footer><!-- End of Footer -->
-
-<!-- Scroll Top -->
-<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-<!-- Preloader -->
-<div id="preloader"></div>
-
-<!-- Vendor JS Files -->
-<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="assets/vendor/php-email-form/validate.js"></script>
-<script src="assets/vendor/aos/aos.js"></script>
-<script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-<script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
-<script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-
-<!-- Main JS File -->
-<script src="assets/js/main.js"></script>
-
+        var profileBtn = document.getElementById('user-profile-btn');
+        var profileMenu = document.getElementById('profile-menu');
+        if (profileBtn && profileMenu) {
+            profileBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                profileMenu.classList.toggle('hidden');
+            });
+            document.addEventListener('click', function () {
+                profileMenu.classList.add('hidden');
+            });
+            profileMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+    })();
+    </script>
 </body>
 </html>

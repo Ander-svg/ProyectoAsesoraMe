@@ -1,44 +1,44 @@
 <?php
-// Incluir el archivo de conexión
 include('conexion.php');
-
-// Iniciar sesión
 session_start();
 
-// Verificar si el usuario ya está logueado
+// Redirigir si ya está logueado
 if (isset($_SESSION['user_id'])) {
-    header("Location: index.php"); // Redirigir al inicio si ya está logueado
+    header("Location: index.php");
     exit();
 }
 
-// Procesar el formulario de registro
+$error_message = '';
+$success_message = '';
+
+// Procesamiento del formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Recoger los datos del formulario
-    $username = $_POST['username'];
-    $email = $_POST['email'];
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
+    $terms = isset($_POST['terms']);
 
-    // Verificar que las contraseñas coincidan
-    if ($password != $confirm_password) {
+    if (!$terms) {
+        $error_message = "Debes aceptar los Términos y Condiciones.";
+    } elseif ($password != $confirm_password) {
         $error_message = "Las contraseñas no coinciden.";
     } else {
-        // Cifrar la contraseña
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        // Verificar si el nombre de usuario o el correo ya están en uso
+        // Comprobar si el usuario o el correo ya existen
         $query = "SELECT * FROM Usuario WHERE correo = '$email' OR nombre = '$username' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
             $error_message = "El nombre de usuario o el correo ya están en uso.";
         } else {
-            // Insertar los datos del usuario en la base de datos
-            $query = "INSERT INTO Usuario (nombre, correo, contrasena_hash) VALUES ('$username', '$email', '$hashed_password')";
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $rol_id = 1; // O el que corresponda a tu rol de usuario
+            $query = "INSERT INTO Usuario (nombre, correo, contrasena_hash, rol_id) VALUES ('$username', '$email', '$hashed_password', $rol_id)";
             if (mysqli_query($conn, $query)) {
-                // Si el registro fue exitoso, redirigir al login
-                header("Location: login.php");
-                exit();
+                $success_message = "¡Registro exitoso! Redirigiendo al inicio de sesión...";
+                echo "<script>
+                    setTimeout(function(){ window.location.href = 'login.php?register=success'; }, 2000);
+                </script>";
             } else {
                 $error_message = "Error al registrar el usuario. Inténtalo nuevamente.";
             }
@@ -46,108 +46,126 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Index - Mentor Bootstrap Template</title>
-  <meta name="description" content="">
-  <meta name="keywords" content="">
-
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-                                                                                                        
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
-
-  <!-- Main CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
-
-  <!-- =======================================================
-  * Template Name: Mentor
-  * Template URL: https://bootstrapmade.com/mentor-free-education-bootstrap-theme/
-  * Updated: Aug 07 2024 with Bootstrap v5.3.3
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta - AsesoraMe</title>
+    <meta name="description" content="Regístrate para obtener una cuenta en AsesoraMe.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .form-container-bg {
+            background: linear-gradient(rgba(17, 24, 39, 0.8), rgba(17, 24, 39, 0.8)), url('https://placehold.co/1920x1080/4f46e5/111827?text=.') no-repeat center center;
+            background-size: cover;
+        }
+    </style>
 </head>
+<body class="form-container-bg flex flex-col min-h-screen">
 
-<body class="index-page">
+    <?php include 'header.php'; ?>
 
-  <header id="header" class="header d-flex align-items-center sticky-top">
-    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+    <main class="flex-1 flex items-center justify-center py-12">
+    <div class="w-full max-w-md p-8 space-y-8 bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-indigo-900/20">
+        <div class="text-center">
+            <a href="index.php" class="text-3xl font-bold text-white">AsesoraMe</a>
+            <h2 class="mt-2 text-2xl font-bold tracking-tight text-white">Crea una nueva cuenta</h2>
+            <p class="mt-2 text-sm text-gray-400">
+                ¿Ya tienes una?
+                <a href="login.php" class="font-medium text-indigo-400 hover:text-indigo-300">
+                    Inicia sesión aquí
+                </a>
+            </p>
+        </div>
 
-      <a href="index.php" class="logo d-flex align-items-center me-auto">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.png" alt=""> -->
-        <h1 class="sitename">AsesoraMe</h1>
-      </a>
+        <?php if ($error_message): ?>
+            <div class="bg-red-900/50 border border-red-400/30 text-red-300 px-4 py-3 rounded-lg relative text-center mb-2" role="alert">
+                <span class="block sm:inline"><?= $error_message ?></span>
+            </div>
+        <?php endif; ?>
 
-      <nav id="navmenu" class="navmenu">
-        <ul>
-          <li><a href="index.php" class="active">Inicio<br></a></li> <!-- End of dropdown menu -->
-          <li><a href="about.html">¿Quiénes somos?</a></li> <!-- End of dropdown menu -->
-          <li><a href="courses.html">Cursos</a></li> <!-- End of dropdown menu -->
-          <li><a href="contact.html">Soporte</a></li> <!-- End of dropdown menu -->
-        </ul> <!-- End of dropdown menu items -->
-        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-      </nav>
+        <?php if ($success_message): ?>
+            <div class="bg-green-900/50 border border-green-400/30 text-green-300 px-4 py-3 rounded-lg relative text-center flex items-center justify-center gap-2 mb-2" role="alert">
+                <i class="ph ph-check-circle text-green-400 text-2xl"></i>
+                <span><?= $success_message ?></span>
+                <span class="ml-2 animate-spin inline-block">
+                    <i class="ph ph-spinner text-green-300 text-2xl"></i>
+                </span>
+            </div>
+        <?php endif; ?>
 
-      <a class="btn-getstarted" href="login.php">Iniciar Sesion</a>
+        <form class="mt-8 space-y-6" action="" method="POST" autocomplete="off">
+            <div>
+                <label for="username" class="sr-only">Nombre de usuario</label>
+                <div class="relative">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="ph ph-user text-gray-400"></i>
+                    </div>
+                    <input id="username" name="username" type="text" autocomplete="username" required
+                           class="relative block w-full appearance-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-3 pl-10 text-white placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                           placeholder="Nombre de usuario" value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>">
+                </div>
+            </div>
+            <div>
+                <label for="email" class="sr-only">Correo electrónico</label>
+                <div class="relative">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="ph ph-envelope text-gray-400"></i>
+                    </div>
+                    <input id="email" name="email" type="email" autocomplete="email" required
+                           class="relative block w-full appearance-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-3 pl-10 text-white placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                           placeholder="Correo electrónico" value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
+                </div>
+            </div>
+            <div>
+                <label for="password" class="sr-only">Contraseña</label>
+                <div class="relative">
+                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="ph ph-lock text-gray-400"></i>
+                    </div>
+                    <input id="password" name="password" type="password" autocomplete="new-password" required
+                           class="relative block w-full appearance-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-3 pl-10 text-white placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                           placeholder="Contraseña">
+                </div>
+            </div>
+            <div>
+                <label for="confirm_password" class="sr-only">Confirmar Contraseña</label>
+                <div class="relative">
+                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="ph ph-lock-key text-gray-400"></i>
+                    </div>
+                    <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required
+                           class="relative block w-full appearance-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-3 pl-10 text-white placeholder-gray-400 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                           placeholder="Confirmar Contraseña">
+                </div>
+            </div>
 
-     <!-- Eliminar el enlace de "Iniciar sesión" en el header -->
+            <div class="flex items-start">
+                <div class="flex h-5 items-center">
+                  <input id="terms" name="terms" type="checkbox" class="h-4 w-4 rounded border-gray-500 bg-gray-700 text-indigo-600 focus:ring-indigo-500" required>
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="terms" class="font-light text-gray-400">Acepto los <a class="font-medium text-indigo-400 hover:text-indigo-300" href="#">Términos y Condiciones</a></label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                        class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                    Crear Cuenta
+                </button>
+            </div>
+        </form>
     </div>
-  </header>
-  <!-- Formulario de Registro -->
-<div class="container py-5">
-    <h2 class="text-center">Crear Cuenta</h2>
-
-    <?php if (isset($error_message)): ?>
-        <div class="alert alert-danger text-center">
-            <?= $error_message ?>
-        </div>
-    <?php endif; ?>
-
-    <form method="POST" class="mx-auto" style="max-width: 400px;">
-        <div class="mb-3">
-            <label for="username" class="form-label">Nombre de usuario</label>
-            <input type="text" class="form-control" id="username" name="username" required>
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Correo electrónico</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Contraseña</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <div class="mb-3">
-            <label for="confirm_password" class="form-label">Confirmar Contraseña</label>
-            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Registrar</button>
-    </form>
-
-    <p class="text-center mt-3">
-        ¿Ya tienes cuenta? <a href="login.php">Inicia sesión aquí</a>
-    </p>
-</div>
-
-  <!-- Scripts de Bootstrap -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
 </body>
-
 </html>

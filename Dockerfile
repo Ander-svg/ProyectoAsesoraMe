@@ -6,8 +6,9 @@ RUN apk add --no-cache nginx
 
 # Instala las extensiones de PostgreSQL para PHP
 # Asegúrate de que postgresql-dev esté disponible en esta imagen base
+# ¡CAMBIO AQUÍ! Añadimos 'pgsql' a la lista de extensiones a instalar.
 RUN apk add --no-cache postgresql-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+    && docker-php-ext-install pdo pdo_pgsql pgsql
 
 # Establece el directorio de trabajo
 WORKDIR /var/www/html

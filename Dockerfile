@@ -19,7 +19,7 @@ RUN rm -rf /etc/nginx/html/*
 COPY . /var/www/html/
 
 # Copia la configuración de Nginx
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Copia y da permisos de ejecución al script entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

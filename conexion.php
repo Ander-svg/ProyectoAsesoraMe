@@ -1,5 +1,5 @@
 <?php
-$servername = "127.0.0.1:3307";
+$servername = "localhost";
 $username = "root";
 $password = ""; // Cambia si tienes contraseña
 $dbname = "asesorame"; // Nombre de tu base de datos

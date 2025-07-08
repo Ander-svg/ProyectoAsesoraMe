@@ -16,4 +16,5 @@ COPY --from=php_builder /var/www/html /var/www/html
 
 EXPOSE 80
 
-CMD sh -c "/usr/bin/php-fpm && nginx -g 'daemon off;'"
+ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+CMD sh -c "/usr/local/sbin/php-fpm -F & exec nginx -g 'daemon off;'"

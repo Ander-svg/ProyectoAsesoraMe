@@ -315,7 +315,7 @@ if (isset($_SESSION['user_id'])) {
       <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="900">
         <div class="features-item">
           <i class="bi bi-command" style="color: #b2904f;"></i>
-          <h3><a href="#soporte-tecnico" class="stretched-link">Soporte en Tiempo Real</a></h3>
+          <h3><a href="#soporte-tecnico" class="stretched-link">Soporte in Tiempo Real</a></h3>
         </div>
       </div><!-- End Feature Item -->
 

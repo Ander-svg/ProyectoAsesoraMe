@@ -38,8 +38,14 @@ $role = $is_logged_in ? $_SESSION['role'] : null;
                 <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">Alcanza tu Máximo Potencial</h1>
                 <p class="text-lg md:text-xl max-w-3xl mb-8 text-indigo-200">Conecta con asesores expertos en cientos de materias. Aprende a tu ritmo, de forma virtual o presencial.</p>
                 <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                    <a href="#courses" class="bg-white text-indigo-700 hover:bg-indigo-100 font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105 duration-300">Buscar un Asesor</a>
-                    <a href="register.php" class="bg-transparent border-2 border-white hover:bg-white/20 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 duration-300">Conviértete en Asesor</a>
+                    <?php if ($is_logged_in && strtolower($role) === 'aprendiz'): ?>
+                        <a href="buscar_asesor.php" class="bg-white text-indigo-700 hover:bg-indigo-100 font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105 duration-300">Buscar un Asesor</a>
+                    <?php else: ?>
+                        <a href="#courses" class="bg-white text-indigo-700 hover:bg-indigo-100 font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105 duration-300">Buscar un Asesor</a>
+                    <?php endif; ?>
+                    <a href="aplica_asesor.php" class="bg-transparent border-2 border-white hover:bg-white/20 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 duration-300">
+                        Conviértete en Asesor
+                    </a>
                 </div>
             </div>
         </section>
@@ -259,6 +265,7 @@ $role = $is_logged_in ? $_SESSION['role'] : null;
                 e.stopPropagation();
             });
         }
+        document.getElementById('year').textContent = new Date().getFullYear();
     })();
     </script>
 </body>

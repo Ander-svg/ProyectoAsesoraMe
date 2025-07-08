@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error_message = "El nombre de usuario o el correo ya están en uso.";
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $rol_id = 1; // O el que corresponda a tu rol de usuario
+            $rol_id = 2; // O el que corresponda a tu rol de usuario
             $query = "INSERT INTO Usuario (nombre, correo, contrasena_hash, rol_id) VALUES ('$username', '$email', '$hashed_password', $rol_id)";
             if (mysqli_query($conn, $query)) {
                 $success_message = "¡Registro exitoso! Redirigiendo al inicio de sesión...";

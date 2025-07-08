@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $show_loading = true;
                 echo "<script>
                     setTimeout(function() {
-                        window.location.href = 'dashboard.php';
+                        window.location.href = 'index.php';
                     }, 2000);
                 </script>";
             } else {

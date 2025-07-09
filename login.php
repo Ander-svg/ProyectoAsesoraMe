@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               FROM usuario u
               LEFT JOIN roles r ON u.rol_id = r.id
               WHERE u.correo = '$username' LIMIT 1";
-    $result = pg_query($conn, $query);
+    $result = pg_query($conn, $sql); // Cambiado a función de PostgreSQL
     $user = pg_fetch_assoc($result);
 
     if ($user) {

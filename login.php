@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               LEFT JOIN roles r ON u.rol_id = r.id
               WHERE u.correo = '$username' LIMIT 1";
     $result = mysqli_query($conn, $query);
-    $user = mysqli_fetch_assoc($result);
+    $user = pg_fetch_assoc($result);
 
     if ($user) {
         if ($user['bloqueado'] == 1) {

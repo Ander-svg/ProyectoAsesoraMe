@@ -76,50 +76,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    $query = "SELECT u.*, r.nombre AS role_name 
-              FROM usuario u
-              LEFT JOIN roles r ON u.rol_id = r.id
-              WHERE u.correo = '$username' LIMIT 1";
-    $result = pg_query($conn, $sql); // Cambiado a función de PostgreSQL
-    $user = pg_fetch_assoc($result);
+    // Consulta SQL para PostgreSQL con placeholder ($1) para el correo
+    $sql_query_text = "SELECT u.*, r.nombre AS role_name 
+                       FROM usuario u
+                       LEFT JOIN roles r ON u.rol_id = r.id
+                       WHERE u.correo = $1 LIMIT 1";
 
-    if ($user) {
-        if ($user['bloqueado'] == 1) {
-            $error_message = "Tu cuenta está bloqueada. Por favor, contacta al administrador.";
-        } else {
-            if (password_verify($password, $user['contrasena_hash'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['nombre'];
-                $_SESSION['role'] = $user['role_name'];
-                $_SESSION['login_attempts'] = 0;
-                $_SESSION['lock_expires'] = 0;
+    // Ejecutar la consulta usando pg_query_params para sentencias preparadas
+    // Esto previene inyecciones SQL y maneja el escape de la cadena.
+    $result = pg_query_params($conn, $sql_query_text, [$username]);
 
-                $success_message = "Inicio de sesión exitoso. Redirigiendo...";
-                $show_loading = true;
-                echo "<script>
-                    setTimeout(function() {
-                        window.location.href = 'index.php';
-                    }, 2000);
-                </script>";
+    // Verificar si la consulta fue exitosa (no retornó false)
+    if ($result === false) {
+        $error_message = "Error en la consulta de la base de datos: " . pg_last_error($conn);
+        // Opcional: Para depuración, puedes registrar el error en un log:
+        // error_log("Error de DB en login: " . pg_last_error($conn));
+    } else {
+        $user = pg_fetch_assoc($result);
+
+        if ($user) {
+            if ($user['bloqueado'] == 1) {
+                $error_message = "Tu cuenta está bloqueada. Por favor, contacta al administrador.";
             } else {
-                $_SESSION['login_attempts']++;
-                if ($_SESSION['login_attempts'] > $max_attempts - 1) {
-                    header("Location: login.php"); // Redirige para mostrar pantalla de espera
-                    exit();
+                if (password_verify($password, $user['contrasena_hash'])) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['nombre'];
+                    $_SESSION['role'] = $user['role_name'];
+                    $_SESSION['login_attempts'] = 0;
+                    $_SESSION['lock_expires'] = 0;
+
+                    $success_message = "Inicio de sesión exitoso. Redirigiendo...";
+                    $show_loading = true;
+                    echo "<script>
+                        setTimeout(function() {
+                            window.location.href = 'index.php';
+                        }, 2000);
+                    </script>";
                 } else {
-                    $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
-                    $error_message = "Correo o contraseña incorrectos. Te quedan <b>$intentos_restantes</b> intento(s).";
+                    $_SESSION['login_attempts']++;
+                    if ($_SESSION['login_attempts'] > $max_attempts - 1) {
+                        header("Location: login.php"); // Redirige para mostrar pantalla de espera
+                        exit();
+                    } else {
+                        $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
+                        $error_message = "Correo o contraseña incorrectos. Te quedan <b>$intentos_restantes</b> intento(s).";
+                    }
                 }
             }
-        }
-    } else {
-        $_SESSION['login_attempts']++;
-        if ($_SESSION['login_attempts'] > $max_attempts - 1) {
-            header("Location: login.php"); // Redirige para mostrar pantalla de espera
-            exit();
-        } else {
-            $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
-            $error_message = "Correo o contraseña incorrectos. Te quedan <b>$intentos_restantes</b> intento(s).";
+        } else { // No se encontró el usuario
+            $_SESSION['login_attempts']++;
+            if ($_SESSION['login_attempts'] > $max_attempts - 1) {
+                header("Location: login.php"); // Redirige para mostrar pantalla de espera
+                exit();
+            } else {
+                $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
+                $error_message = "Correo o contraseña incorrectos. Te quedan <b>$intentos_restantes</b> intento(s).";
+            }
         }
     }
 }
@@ -164,13 +176,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </p>
             </div>
 
-            <!-- Mostrar número de intentos restantes -->
             <?php
             if ($_SESSION['login_attempts'] > 0 && $_SESSION['login_attempts'] < $max_attempts) {
                 $intentos_restantes = $max_attempts - $_SESSION['login_attempts'];
                 echo '<div class="bg-yellow-900/40 border border-yellow-600/30 text-yellow-300 px-4 py-2 rounded-lg text-center mb-2">
-                        Te quedan <b>' . $intentos_restantes . '</b> intento(s) para iniciar sesión.
-                      </div>';
+                            Te quedan <b>' . $intentos_restantes . '</b> intento(s) para iniciar sesión.
+                          </div>';
             }
             ?>
 
@@ -209,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="pt-4">
                         <label for="password" class="sr-only">Contraseña</label>
                         <div class="relative">
-                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                               <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <i class="ph ph-lock text-gray-400"></i>
                             </div>
                             <input id="password" name="password" type="password" autocomplete="current-password" required 
@@ -232,7 +243,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div>
                     <button type="submit" id="loginBtn"
-                            class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                                    class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800">
                         Iniciar Sesión
                     </button>
                 </div>

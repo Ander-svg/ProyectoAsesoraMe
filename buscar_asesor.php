@@ -27,17 +27,17 @@ JOIN asesor ON curso.asesorId = asesor.id
 JOIN usuario ON asesor.usuarioId = usuario.id
 ORDER BY curso.id DESC
 ";
-$res = mysqli_query($conn, $sql);
+$res = pg_query($conn, $sql);
 
 $cursos = [];
-while ($row = mysqli_fetch_assoc($res)) {
+while ($row = pg_fetch_assoc($res)) {
     $cursos[] = $row;
 }
 
 // Obtener valoraciones por asesoría (relaciona por asesorId)
 $valoraciones = [];
-$valRes = mysqli_query($conn, "SELECT v.*, u.nombre AS autor_nombre FROM valoracion v JOIN usuario u ON v.autorId=u.id ORDER BY v.fechaCreacion DESC");
-while ($row = mysqli_fetch_assoc($valRes)) {
+$valRes = pg_query($conn, "SELECT v.*, u.nombre AS autor_nombre FROM valoracion v JOIN usuario u ON v.autorId=u.id ORDER BY v.fechaCreacion DESC");
+while ($row = pg_fetch_assoc($valRes)) {
     $valoraciones[$row['asesoriaId']][] = $row;
 }
 

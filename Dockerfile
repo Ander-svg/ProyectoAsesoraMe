@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y nginx
 # Instala las extensiones de PostgreSQL para PHP
 # ¡CAMBIO AQUÍ! Usamos apt-get y luego docker-php-ext-install
 RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql pgsql \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mysqli \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Establece el directorio de trabajo

@@ -5,8 +5,8 @@ FROM php:8.2-fpm-alpine
 RUN apk add --no-cache nginx
 
 # Instala las extensiones de PostgreSQL para PHP
-# ¡CAMBIO AQUÍ! Usamos 'libpq-dev' en lugar de 'postgresql-dev'
-RUN apk add --no-cache libpq-dev \
+# ¡CAMBIO AQUÍ! Primero actualizamos los índices de paquetes con 'apk update'
+RUN apk update && apk add --no-cache libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql
 
 # Establece el directorio de trabajo
